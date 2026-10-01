@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Shrink piano</title>
+        <style>
+            body{
+                background-color:black;
+                color:white;
+                font-family:monospace;
+                display:flex;
+                flex-direction:column;
+                align-items:center;
+                justify-content:center;
+                height:100vh;
+                margin:0;
+            }
+            h1{margin-bottom:5px;}
+            p{color:grey;margin-bottom:30px;}
+            .piano{
+                position:relative;
+                display:flex;
+                background:black;
+                padding:13px;
+                border-radius:9px;
+            }
+            .key{
+                position:relative;
+                width:48px;
+                height:160px;
+                background:white;
+                border:1px solid #ccc;
+                margin:0 2px;
+                border-radius:0 0 6px 6px;
+                cursor:pointer;
+                flex-direction:column;
+                justify-content:flex-end;
+                align-items:center;
+                padding-bottom:15px;
+                color:#333;
+                font-weight:bold;
+                font-size:12px;
+                user-select:none;
+                transition:background 0.1s,transform 0.05s;
+            }
+            .key span{
+                color:grey;
+                font-size:10px;
+                margin-top:4px;
+            }
+            .key.black{
+                position:absolute;
+                width:32px;
+                height:95px;
+                background:#222;
+                border-radius:0 0 4px 4px;
+                z-index:1;
+                padding-bottom:10px;
+            }
+            .key.black span{color:#666;}
+            #kb-cs{left:36px;}
+            #kb-ds{left:86px;}
+            #kb-fs{left:186px;}
+            #kb-gs{left:236px;}
+            #kb-as{left:286px;}
+            .key:active,.key.active{
+                background: red!important;
+                color:white !important;
+                transform:translateY(2px);
+            }
+            .key.black:active,.key.black.active{
+                background:orange !important;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>piano</h1>
+        <p>play with mouse or keyboard(A-K,W,E,T,Y,U)</p>
+        <div class="piano">
+            <div class="key" data-note="261.63" data-key="a" onclick="playKey(this)">C<span>A</span></div>
+            <div class="key" data-note="293.66" data-key="s" onclick="playKey(this)">D<span>S</span></div>
+            <div class="key" data-note="329.63" data-key="d" onclick="playKey(this)">E<span>D</span></div>
+            <div class="key" data-note="349.23" data-key="f" onclick="playKey(this)">F<span>F</span></div>
+            <div class="key" data-note="392.00" data-key="g" onclick="playKey(this)">G<span>G</span></div>
+            <div class="key" data-note="440.00" data-key="h" onclick="playKey(this)">A<span>H</span></div>
+            <div class="key" data-note="493.88" data-key="j" onclick="playKey(this)">B<span>J</span></div>
+            <div class="key" data-note="523.25" data-key="k" onclick="playKey(this)">C<span>K</span></div>
+            <div class="key black" id="kb-cs" data-note="277.18" data-key="w" onclick="playKey(this)">C#<span>W</span></div>
+            <div class="key black" id="kb-ds" data-note="311.13" data-key="e" onclick="playKey(this)">D#<span>E</span></div>
+            <div class="key black" id="kb-fs" data-note="369.99" data-key="t" onclick="playKey(this)">F#<span>T</span></div>            
+            <div class="key black" id="kb-gs" data-note="415.30" data-key="y" onclick="playKey(this)">G#<span>Y</span></div>
+            <div class="key black" id="kb-as" data-note="466.16" data-key="u" onclick="playKey(this)">A#<span>U</span></div>
+        </div>
+        <script>
+            const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+            function playTone(frequency){
+                if(!audioCtx){
+                    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+                }
+                if(audioCtx.state==='suspended'){
+                    audioCtx.resume();
+                }
+                let osc=audioCtx.createOscillator();
+                let gain=audioCtx.createGain();
+                osc.type='sine';
+                osc.frequency.value=frequency;
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                let now=audioCtx.currentTime;
+                osc.start(now);
+                gain.gain.setValueAtTime(0.3,now);
+                gain.gain.linearRampToValueAtTime(0.0001,now+0.4);
+                osc.stop(now+0.4);
+            }
+            function playKey(element){
+                let freq=parseFloat(element.getAttribute('data-note'));
+                playTone(freq);
+                element.classList.add('active');
+                setTimeout(()=>{element.classList.remove('active');},100);
+            }
+            window.addEventListener('keydown',(e)=>{
+                if(e.repeat)return;
+                let keyChar=e.key.toLowerCase();
+                let targetKey=document.querySelector(`.key[data-key="${keyChar}"]`);
+                if(targetKey){
+                    playKey(targetKey);
+                }
+            });
+        </script>
+    </body>
+</html>    
